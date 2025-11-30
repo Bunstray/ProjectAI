@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Larisin AI - Smart UMKM Assistant</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* --- 1. CONFIG & VARIABLES --- */
+      :root {
+        --primary: #006d77; /* Deep Teal */
+        --secondary: #83c5be; /* Soft Sage */
+        --accent: #e29578; /* Terra Cotta */
+        --bg-color: #edf6f9; /* Ice White */
+        --surface: #ffffff; /* Pure White */
+        --text-main: #1d3557; /* Dark Navy */
+        --text-muted: #6c757d;
+        --alert: #e63946; /* Semantic Red */
+        --success: #2a9d8f; /* Semantic Green */
+        --radius-card: 16px;
+        --radius-btn: 12px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #e0e0e0;
+        color: var(--text-main);
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      /* Simulasi Frame HP */
+      #mobile-app {
+        background-color: var(--bg-color);
+        width: 100%;
+        max-width: 414px; /* Lebar iPhone Max */
+        min-height: 100vh;
+        position: relative;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        padding-bottom: 90px;
+      }
+
+      /* --- 2. HEADER --- */
+      .header {
+        padding: 24px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--surface);
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .user-info h4 {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--text-muted);
+      }
+      .user-info h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+      .avatar {
+        width: 40px;
+        height: 40px;
+        background-color: var(--secondary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      /* --- 3. GENERAL LAYOUT & CARDS --- */
+      .content {
+        padding: 20px;
+      }
+
+      .view-section {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .view-section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius-card);
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      /* --- 4. DASHBOARD COMPONENTS --- */
+      .weather-widget {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        background: rgba(0, 109, 119, 0.1);
+        padding: 10px 15px;
+        border-radius: 12px;
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .prediction-number {
+        font-size: 32px;
+        font-weight: 700;
+      }
+      .prediction-sub {
+        font-size: 12px;
+        color: var(--alert);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Progress Bar */
+      .progress-container {
+        width: 100%;
+        background: #f0f0f0;
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        height: 100%;
+        background: var(--primary);
+        width: 0%;
+        transition: width 1s;
+        border-radius: 10px;
+      }
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-top: 5px;
+        color: var(--text-muted);
+      }
+
+      /* Action List */
+      .action-item {
+        display: flex;
+        gap: 12px;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .action-item:last-child {
+        border-bottom: none;
+      }
+      .icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .icon-alert {
+        background: #ffebee;
+        color: var(--alert);
+      }
+      .icon-idea {
+        background: #e0f2f1;
+        color: var(--success);
+      }
+      .btn-small {
+        margin-top: 5px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* --- 5. KASIR / POS COMPONENTS --- */
+      .category-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        scrollbar-width: none;
+      }
+      .category-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .cat-pill {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid #ddd;
+        background: white;
+        color: var(--text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .cat-pill.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+      .product-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+      .product-card:active {
+        transform: scale(0.95);
+      }
+      .prod-img {
+        height: 100px;
+        background: #eee;
+        background-size: cover;
+        background-position: center;
+      }
+      .prod-info {
+        padding: 10px;
+      }
+      .prod-name {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        line-height: 1.2;
+        height: 32px;
+        overflow: hidden;
+      }
+      .prod-price {
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .prod-stock {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      /* Cart Bar */
+      .cart-bar {
+        position: fixed;
+        bottom: 85px;
+        left: 20px;
+        right: 20px;
+        background: var(--text-main);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transform: translateY(200%);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 90;
+        max-width: 374px;
+        margin: 0 auto;
+      }
+      .cart-bar.active {
+        transform: translateY(0);
+      }
+      .btn-checkout {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* AI Nudge */
+      .ai-nudge {
+        position: fixed;
+        top: 100px;
+        left: 20px;
+        right: 20px;
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 12px;
+        border-radius: 8px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: #0d47a1;
+        z-index: 99;
+        animation: slideDown 0.3s;
+        max-width: 374px;
+        margin: 0 auto;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      @keyframes slideDown {
+        from {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .nudge-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        color: #0d47a1;
+        margin-left: auto;
+        cursor: pointer;
+      }
+
+      /* --- 6. STOCK & IDEAS COMPONENTS --- */
+      .calendar-strip {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+      }
+      .cal-date {
+        min-width: 60px;
+        height: 70px;
+        background: var(--surface);
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .cal-date.active {
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 5px 15px rgba(0, 109, 119, 0.3);
+      }
+      .cal-date.busy .cal-dot {
+        background: var(--alert);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-top: 4px;
+      }
+
+      .tag-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .tag {
+        background: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 11px;
+        border: 1px solid #eee;
+      }
+      .tag.viral {
+        background: #fff3e0;
+        color: #e65100;
+        border-color: #ffe0b2;
+        font-weight: 700;
+      }
+
+      /* --- 7. NAVIGATION --- */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        max-width: 414px;
+        height: 75px;
+        background: var(--surface);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid #eee;
+        z-index: 100;
+      }
+      .nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 10px;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      .nav-item i {
+        font-size: 24px;
+        margin-bottom: 4px;
+      }
+      .nav-item.active {
+        color: var(--primary);
+      }
+      .nav-item.active i {
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="mobile-app">
+      <header class="header">
+        <div class="user-info">
+          <h4 id="page-subtitle">Selamat Pagi,</h4>
+          <h2 id="page-title">Dashboard</h2>
+        </div>
+        <div class="avatar">KK</div>
+      </header>
+
+      <div class="content">
+        <div id="view-home" class="view-section active">
+          <div class="weather-widget">
+            <i class="ri-rainy-fill"></i>
+            <span id="weather-text">Hujan ringan sampai 14.00</span>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Prediksi Penjualan</span>
+              <i class="ri-line-chart-line" style="color: var(--primary)"></i>
+            </div>
+            <div class="prediction-number" id="pred-sales">0 Cup</div>
+            <div class="prediction-sub">
+              <i class="ri-arrow-down-circle-fill"></i>
+              <span id="pred-reason">Analisis sedang berjalan...</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar" id="sales-bar"></div>
+            </div>
+            <div class="progress-label">
+              <span>Realisasi</span><span>Target: 60</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Prioritas</span>
+            </div>
+            <div id="action-container"></div>
+          </div>
+        </div>
+
+        <div id="view-kasir" class="view-section">
+          <div class="category-scroll">
+            <div class="cat-pill active">Semua</div>
+            <div class="cat-pill">Kopi</div>
+            <div class="cat-pill">Non-Kopi</div>
+            <div class="cat-pill">Makanan</div>
+          </div>
+
+          <div class="product-grid" id="product-list"></div>
+          <div style="height: 100px"></div>
+        </div>
+
+        <div id="view-stok" class="view-section">
+          <div class="calendar-strip">
+            <div class="cal-date active">
+              <span style="font-size: 10px">SEN</span
+              ><span style="font-weight: 700">25</span>
+            </div>
+            <div class="cal-date">
+              <span style="font-size: 10px">SEL</span
+              ><span style="font-weight: 700">26</span>
+            </div>
+            <div class="cal-date busy">
+              <span style="font-size: 10px">RAB</span
+              ><span style="font-weight: 700">27</span>
+              <div class="cal-dot"></div>
+            </div>
+            <div class="cal-date">
+              <span style="font-size: 10px">KAM</span
+              ><span style="font-weight: 700">28</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Daftar Belanja AI</span>
+              <small style="color: var(--primary)">Untuk 3 Hari</small>
+            </div>
+            <div class="action-item">
+              <div style="flex: 1">
+                <h5 style="font-size: 14px">Biji Kopi Robusta</h5>
+                <span style="font-size: 11px; color: var(--alert)"
+                  >Urgent: Sisa 500gr</span
+                >
+              </div>
+              <i
+                class="ri-checkbox-circle-line"
+                style="font-size: 24px; color: #ddd"
+              ></i>
+            </div>
+            <div class="action-item">
+              <div style="flex: 1">
+                <h5 style="font-size: 14px">Susu Full Cream</h5>
+                <span style="font-size: 11px; color: var(--text-muted)"
+                  >Beli 5 Karton</span
+                >
+              </div>
+              <i
+                class="ri-checkbox-circle-line"
+                style="font-size: 24px; color: #ddd"
+              ></i>
+            </div>
+            <button
+              style="
+                width: 100%;
+                margin-top: 15px;
+                background: var(--primary);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 12px;
+                font-weight: 600;
+              "
+            >
+              Pesan ke Supplier
+            </button>
+          </div>
+        </div>
+
+        <div id="view-ide" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Radar Tren Lokal</span
+              ><i class="ri-radar-line"></i>
+            </div>
+            <div class="tag-cloud">
+              <span class="tag">Kopi Gula Aren</span>
+              <span class="tag viral">🔥 Pistachio</span>
+              <span class="tag">Seblak</span>
+              <span class="tag viral">🔥 Cromboloni</span>
+              <span class="tag">Matcha</span>
+            </div>
+            <p
+              style="
+                font-size: 10px;
+                color: var(--text-muted);
+                margin-top: 10px;
+              "
+            >
+              *Data radius 5km
+            </p>
+          </div>
+
+          <div class="card" style="padding: 0; overflow: hidden">
+            <div style="background: #eee; height: 120px; position: relative">
+              <span
+                style="
+                  position: absolute;
+                  top: 10px;
+                  left: 10px;
+                  background: var(--accent);
+                  color: white;
+                  padding: 4px 8px;
+                  border-radius: 4px;
+                  font-size: 10px;
+                "
+                >Rekomendasi AI</span
+              >
+              <img
+                src="https://images.unsplash.com/photo-1572449043416-55f4685c9bb7?auto=format&fit=crop&q=80&w=600"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+            </div>
+            <div style="padding: 15px">
+              <h3 style="font-size: 16px; margin-bottom: 5px">
+                Pistachio Latte Hemat
+              </h3>
+              <p style="font-size: 12px; color: var(--text-muted)">
+                Tren Pistachio naik 200%. Kamu punya stok susu berlebih.
+              </p>
+              <div
+                style="
+                  background: #f9f9f9;
+                  padding: 10px;
+                  border-radius: 8px;
+                  margin: 10px 0;
+                  display: flex;
+                  justify-content: space-between;
+                  font-size: 12px;
+                "
+              >
+                <span>HPP: <b>Rp 8.500</b></span
+                ><span>Jual: <b>Rp 18.000</b></span>
+              </div>
+              <button
+                style="
+                  width: 100%;
+                  background: var(--accent);
+                  color: white;
+                  border: none;
+                  padding: 10px;
+                  border-radius: 8px;
+                "
+              >
+                Lihat Resep
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-bar" id="cart-bar">
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 10px; opacity: 0.8" id="cart-count"
+            >0 Item</span
+          >
+          <span style="font-size: 16px; font-weight: 700" id="cart-total"
+            >Rp 0</span
+          >
+        </div>
+        <button class="btn-checkout" onclick="processCheckout()">Bayar</button>
+      </div>
+
+      <div class="ai-nudge" id="ai-nudge">
+        <div style="font-size: 20px">🤖</div>
+        <div>
+          <b>Saran AI:</b> Pelanggan beli Kopi? <br />Tawarkan
+          <b>Croissant</b> (Cocok!).
+        </div>
+        <button
+          class="nudge-close"
+          onclick="this.parentElement.style.display='none'"
+        >
+          &times;
+        </button>
+      </div>
+
+      <nav class="bottom-nav">
+        <a
+          href="#"
+          class="nav-item active"
+          onclick="switchTab('home', this); return false;"
+        >
+          <i class="ri-home-5-fill"></i>
+          <span>Beranda</span>
+        </a>
+
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('kasir', this); return false;"
+        >
+          <i class="ri-calculator-fill" style="font-size: 26px"></i>
+          <span style="font-weight: 700">Kasir</span>
+        </a>
+
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('stok', this); return false;"
+        >
+          <i class="ri-box-3-line"></i>
+          <span>Stok</span>
+        </a>
+
+        <a
+          href="#"
+          class="nav-item"
+          onclick="switchTab('ide', this); return false;"
+        >
+          <i class="ri-lightbulb-flash-line"></i>
+          <span>Ide</span>
+        </a>
+      </nav>
+    </div>
+
+    <script>
+      // --- DATA ---
+      const mockDashboard = {
+        todaySales: 45,
+        target: 60,
+        weatherMsg: "Hujan ringan sampai 14.00",
+        actions: [
+          {
+            type: "alert",
+            title: "Susu UHT Menipis",
+            desc: "Sisa 2 kotak. Cukup 10 cup.",
+            btn: "Beli",
+          },
+          {
+            type: "idea",
+            title: "Ide Promo Hujan",
+            desc: "Diskon Ongkir untuk dorong online.",
+            btn: "Simulasi",
+          },
+        ],
+      };
+
+      const products = [
+        {
+          id: 1,
+          name: "Kopi Susu Gula Aren",
+          price: 18000,
+          stock: 50,
+          img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=300",
+        },
+        {
+          id: 2,
+          name: "Americano Hot",
+          price: 15000,
+          stock: 20,
+          img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=300",
+        },
+        {
+          id: 3,
+          name: "Croissant Butter",
+          price: 22000,
+          stock: 12,
+          img: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=300",
+        },
+        {
+          id: 4,
+          name: "Matcha Latte",
+          price: 24000,
+          stock: 35,
+          img: "https://images.unsplash.com/photo-1515825838458-f2a94b20105a?auto=format&fit=crop&q=80&w=300",
+        },
+      ];
+
+      let cart = [];
+
+      // --- FUNCTIONS ---
+
+      function renderDashboard() {
+        // Prediksi
+        document.getElementById("pred-sales").innerText =
+          mockDashboard.todaySales + " Cup";
+        document.getElementById("pred-reason").innerText = "Turun karena cuaca";
+        setTimeout(() => {
+          document.getElementById("sales-bar").style.width =
+            (mockDashboard.todaySales / mockDashboard.target) * 100 + "%";
+        }, 300);
+
+        // Actions
+        const container = document.getElementById("action-container");
+        let html = "";
+        mockDashboard.actions.forEach((act) => {
+          const iconClass = act.type === "alert" ? "icon-alert" : "icon-idea";
+          const iconName =
+            act.type === "alert"
+              ? "ri-alarm-warning-fill"
+              : "ri-lightbulb-flash-fill";
+          html += `
+                <div class="action-item">
+                    <div class="icon-box ${iconClass}"><i class="${iconName}"></i></div>
+                    <div class="item-text">
+                        <h5 style="font-size:13px; margin-bottom:2px">${act.title}</h5>
+                        <p style="font-size:11px; color:#666">${act.desc}</p>
+                        <button class="btn-small">${act.btn}</button>
+                    </div>
+                </div>`;
+        });
+        container.innerHTML = html;
+      }
+
+      function renderPOS() {
+        const grid = document.getElementById("product-list");
+        grid.innerHTML = "";
+        products.forEach((p) => {
+          grid.innerHTML += `
+                <div class="product-card" onclick="addToCart(${p.id})">
+                    <div class="prod-img" style="background-image: url('${
+                      p.img
+                    }')"></div>
+                    <div class="prod-info">
+                        <div class="prod-name">${p.name}</div>
+                        <div class="prod-price">Rp ${p.price.toLocaleString()}</div>
+                        <div class="prod-stock">Stok: ${p.stock}</div>
+                    </div>
+                </div>`;
+        });
+      }
+
+      function addToCart(id) {
+        const product = products.find((p) => p.id === id);
+        if (product.stock <= 0) {
+          alert("Stok Habis!");
+          return;
+        }
+
+        cart.push(product);
+        updateCartUI();
+
+        // Logic AI Nudge: Jika beli Kopi, tawarkan Croissant
+        if (
+          product.name.includes("Kopi") ||
+          product.name.includes("Americano")
+        ) {
+          const nudge = document.getElementById("ai-nudge");
+          nudge.style.display = "flex";
+          setTimeout(() => {
+            nudge.style.display = "none";
+          }, 4000);
+        }
+      }
+
+      function updateCartUI() {
+        const bar = document.getElementById("cart-bar");
+        if (cart.length > 0) {
+          bar.classList.add("active");
+          const total = cart.reduce((sum, item) => sum + item.price, 0);
+          document.getElementById(
+            "cart-count"
+          ).innerText = `${cart.length} Item`;
+          document.getElementById(
+            "cart-total"
+          ).innerText = `Rp ${total.toLocaleString()}`;
+        } else {
+          bar.classList.remove("active");
+        }
+      }
+
+      function processCheckout() {
+        if (cart.length === 0) return;
+        // Kurangi stok dummy
+        cart.forEach((item) => {
+          const idx = products.findIndex((p) => p.id === item.id);
+          if (products[idx].stock > 0) products[idx].stock--;
+        });
+
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        alert(
+          `Transaksi Berhasil Rp ${total.toLocaleString()}!\nData dikirim ke AI Core untuk update prediksi besok.`
+        );
+
+        cart = [];
+        updateCartUI();
+        renderPOS(); // Refresh stok tampilan
+      }
+
+      function switchTab(viewId, navElement) {
+        // Hide all
+        document
+          .querySelectorAll(".view-section")
+          .forEach((el) => el.classList.remove("active"));
+        // Show target
+        document.getElementById("view-" + viewId).classList.add("active");
+
+        // Update Header
+        const titleEl = document.getElementById("page-title");
+        const subEl = document.getElementById("page-subtitle");
+
+        if (viewId === "home") {
+          titleEl.innerText = "Dashboard";
+          subEl.innerText = "Selamat Pagi,";
+        } else if (viewId === "kasir") {
+          titleEl.innerText = "Kasir Pintar";
+          subEl.innerText = "Catat Transaksi";
+        } else if (viewId === "stok") {
+          titleEl.innerText = "Manajemen Stok";
+          subEl.innerText = "Cek Kebutuhan";
+        } else if (viewId === "ide") {
+          titleEl.innerText = "Lab Inovasi";
+          subEl.innerText = "Tren Viral";
+        }
+
+        // Update Nav
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((el) => el.classList.remove("active"));
+        navElement.classList.add("active");
+      }
+
+      // INIT
+      document.addEventListener("DOMContentLoaded", () => {
+        renderDashboard();
+        renderPOS();
+      });
+    </script>
+  </body>
+</html>
